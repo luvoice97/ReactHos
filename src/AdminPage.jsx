@@ -8,6 +8,9 @@ const AdminPage = () => {
   const [patientList, setPatientList] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const apiUrl = "http://101.79.10.210:8080";
+
+
   useEffect(() => {
     // 환자 목록을 3초마다 갱신
     const intervalId = setInterval(loadPatientList, 3000);
@@ -22,7 +25,7 @@ const AdminPage = () => {
 
   // 현재 진료 중인 환자 확인
   const CheckCurrentPatient = () => {
-    axios.get('http://localhost:8080/user/patients/CheckCurrent')
+    axios.get(`${apiUrl}/user/patients/CheckCurrent`)
       .then(response => {
         setCurrentPatient(response.data);
       })
@@ -33,7 +36,7 @@ const AdminPage = () => {
 
   // 환자 목록 불러오기
   const loadPatientList = () => {
-    axios.get('http://localhost:8080/user/patients/list')
+    axios.get(`${apiUrl}/user/patients/list`)
       .then(response => {
         setPatientList(response.data);
       })
@@ -49,7 +52,7 @@ const AdminPage = () => {
       return;
     }
 
-    axios.get(`http://localhost:8080/user/patients/add?patient=${encodeURIComponent(patientName)}`)
+    axios.get(`${apiUrl}/user/patients/add?patient=${encodeURIComponent(patientName)}`)
     .then(() => {
       setPatientName('');
       loadPatientList(); // 목록 갱신
@@ -58,14 +61,13 @@ const AdminPage = () => {
     .catch(error => {
       console.error('환자 추가 중 오류 발생:', error);
     });
-  
   };
 
   // 환자 호출
   const callPatient = (patient) => {
     setCurrentPatient(patient.name);
-  
-    axios.get(`http://localhost:8080/user/patients/call?seq=${patient.seq}&name=${encodeURIComponent(patient.name)}`)
+
+    axios.get(`${apiUrl}/user/patients/call?seq=${patient.seq}&name=${encodeURIComponent(patient.name)}`)
       .then(() => {
         loadPatientList(); // 목록 갱신
       })
@@ -73,11 +75,10 @@ const AdminPage = () => {
         console.error('환자 호출 중 오류 발생:', error);
       });
   };
-  
 
   // 환자 삭제
   const deletePatient = (seq) => {
-    axios.get(`http://localhost:8080/user/patients/delete?seq=${seq}`)
+    axios.get(`${apiUrl}/user/patients/delete?seq=${seq}`)
       .then(() => {
         loadPatientList(); // 목록 갱신
       })
@@ -85,7 +86,6 @@ const AdminPage = () => {
         console.error('환자 삭제 중 오류 발생:', error);
       });
   };
-  
 
   return (
     <div>

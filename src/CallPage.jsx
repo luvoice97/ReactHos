@@ -6,14 +6,17 @@ const CallPage = () => {
     const [currentPatient, setCurrentPatient] = useState('');
     const [patients, setPatients] = useState([]);
 
+    const apiUrl = "http://101.79.10.210:8080";
+
+
     useEffect(() => {
         const checkUserDTO = () => {
-            axios.get('http://localhost:8080/user/patients/checkUserDTO')
+            axios.get(`${apiUrl}/user/patients/checkUserDTO`)
                 .then(response => {
                     const newName = response.data;
                     if (newName !== currentPatient) {
-                        // Play TTS and DingDong sound
-                        axios.get(`http://localhost:8080/user/naverTTS?text=${newName}`)
+                        // TTS와 DingDong 소리 재생
+                        axios.get(`${apiUrl}/user/naverTTS?text=${newName}`)
                             .then(fileUrl => {
                                 const ttsSound = document.getElementById('tts');
                                 ttsSound.src = fileUrl;
@@ -27,12 +30,12 @@ const CallPage = () => {
                                 setCurrentPatient(newName);
                                 document.getElementById('modalTitle').innerHTML = `${newName} 님<br>진료실로 들어오세요`;
 
-                                // Display modal for 7 seconds
+                                // 7초 동안 모달 표시
                                 setTimeout(() => document.getElementById('myModal').style.display = 'block', 1000);
                                 setTimeout(() => document.getElementById('myModal').style.display = 'none', 7000);
 
-                                // Clear session after the action
-                                axios.get('http://localhost:8080/user/patients/clearSession')
+                                // 작업 후 세션 초기화
+                                axios.get(`${apiUrl}/user/patients/clearSession`)
                                     .catch(error => console.error('세션 정리 중 오류 발생:', error));
                             })
                             .catch(error => console.error('TTS 요청 중 오류 발생:', error));
@@ -41,12 +44,12 @@ const CallPage = () => {
                 .catch(error => console.error('UserDTO 체크 중 오류 발생:', error));
         };
 
-        // Set interval to check every second
+        // 1초마다 checkUserDTO 확인
         const intervalId = setInterval(checkUserDTO, 1000);
 
-        // Load patient list initially and every 3 seconds
+        // 3초마다 환자 목록 갱신
         const loadPatientList = () => {
-            axios.get('http://localhost:8080/user/patients/list')
+            axios.get(`${apiUrl}/user/patients/list`)
                 .then(response => {
                     setPatients(response.data);
                 })
@@ -56,18 +59,18 @@ const CallPage = () => {
         loadPatientList();
         const patientListIntervalId = setInterval(loadPatientList, 3000);
 
-        // Cleanup intervals on unmount
+        // 컴포넌트 언마운트 시 interval 종료
         return () => {
             clearInterval(intervalId);
             clearInterval(patientListIntervalId);
         };
-    }, [currentPatient]); // Dependency on currentPatient for the check
+    }, [currentPatient]); // currentPatient가 변경될 때마다 checkUserDTO를 실행
 
-    // Call patient function
+    // 환자 호출 함수
     const callPatient = (patient) => {
-        axios.get(`http://localhost:8080/user/patients/call?seq=${patient.seq}&name=${patient.name}`)
+        axios.get(`${apiUrl}/user/patients/call?seq=${patient.seq}&name=${patient.name}`)
             .then(() => {
-                // Reload patient list after calling
+                // 호출 후 환자 목록 갱신
                 setPatients(prevPatients => prevPatients.filter(p => p.seq !== patient.seq));
             })
             .catch(error => console.error('환자 호출 중 오류 발생:', error));
